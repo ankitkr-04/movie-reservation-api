@@ -16,6 +16,7 @@ import lombok.Data;
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
 @Data
+
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -9,7 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.moviereservation.api.web.dto.response.ApiResponse;
+import com.moviereservation.api.web.dto.response.wrappers.ApiResponse;
 
 import io.jsonwebtoken.JwtException;
 import lombok.extern.slf4j.Slf4j;

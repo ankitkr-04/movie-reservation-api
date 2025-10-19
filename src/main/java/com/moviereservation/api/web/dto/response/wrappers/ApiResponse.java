@@ -1,4 +1,4 @@
-package com.moviereservation.api.web.dto.response;
+package com.moviereservation.api.web.dto.response.wrappers;
 
 import java.time.Instant;
 import java.util.List;
