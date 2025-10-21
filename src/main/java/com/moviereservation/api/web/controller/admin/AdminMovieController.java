@@ -72,6 +72,14 @@ public class AdminMovieController {
                 return ResponseEntity.ok(ApiResponse.success("Movie fetched successfully", response));
         }
 
+        @DeleteMapping("/{movieId}")
+        @Operation(summary = "Delete movie by ID")
+        public ResponseEntity<ApiResponse<Void>> deleteMovie(
+                        @PathVariable final UUID movieId) {
+                movieService.deleteById(movieId);
+                return ResponseEntity.ok(ApiResponse.success("Movie deleted successfully", null));
+        }
+
         @GetMapping
         @Operation(summary = "Get all movies (Admin)", description = "Retrieve a paginated list of movies with optional filtering. Admins can filter by any status.")
         public ResponseEntity<ApiResponse<PagedResponse<MovieAdminResponse>>> getMovies(
