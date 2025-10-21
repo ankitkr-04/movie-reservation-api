@@ -51,4 +51,3 @@ public interface MovieMapper {
     @Mapping(target = "deletedBy", ignore = true)
     void toEntity(UpdateMovieRequest req, @MappingTarget Movie movie);
 }
-

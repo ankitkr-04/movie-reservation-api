@@ -20,9 +20,9 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@ToString(exclude = {"passwordHash"}) // Never include password in toString
+@ToString(exclude = { "passwordHash" }) // Never include password in toString
 public class User {
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
@@ -53,12 +53,15 @@ public class User {
     private Instant updatedAt;
 
     /**
-     * Use only ID for equals/hashCode to maintain consistency across persistence contexts.
+     * Use only ID for equals/hashCode to maintain consistency across persistence
+     * contexts.
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof User))
+            return false;
         User user = (User) o;
         return id != null && Objects.equals(id, user.id);
     }
@@ -68,4 +71,3 @@ public class User {
         return getClass().hashCode();
     }
 }
-

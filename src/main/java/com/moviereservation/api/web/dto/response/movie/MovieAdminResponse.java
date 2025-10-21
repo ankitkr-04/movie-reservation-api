@@ -30,7 +30,7 @@ public class MovieAdminResponse {
     private String posterUrl;
     private String rating;
     private MovieStatus status;
-    
+
     // Administrative metadata
     private Instant createdAt;
     private Instant updatedAt;

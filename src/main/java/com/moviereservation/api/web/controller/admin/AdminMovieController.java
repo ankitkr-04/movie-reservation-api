@@ -33,59 +33,56 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Admin - Movies", description = "Movie management for administrators")
 @RequiredArgsConstructor
 public class AdminMovieController {
-    
-    private final MovieService movieService;
-    private final MovieMapper movieMapper;
 
-    @PostMapping
-    @Operation(summary = "Create new movie")
-    public ResponseEntity<ApiResponse<MovieAdminResponse>> createMovie(
-            @Valid @RequestBody final CreateMovieRequest request) {
+        private final MovieService movieService;
+        private final MovieMapper movieMapper;
 
-        final Movie movie = movieService.create(request);
-        final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+        @PostMapping
+        @Operation(summary = "Create new movie")
+        public ResponseEntity<ApiResponse<MovieAdminResponse>> createMovie(
+                        @Valid @RequestBody final CreateMovieRequest request) {
 
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Movie created successfully", response));
-    }
+                final Movie movie = movieService.create(request);
+                final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
 
-    @PatchMapping("/{movieId}")
-    @Operation(summary = "Update existing movie")
-    public ResponseEntity<ApiResponse<MovieAdminResponse>> updateMovie(
-            @PathVariable final UUID movieId,
-            @Valid @RequestBody final UpdateMovieRequest request) {
-        
-        final Movie movie = movieService.update(movieId, request);
-        final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
-        
-        return ResponseEntity.ok(ApiResponse.success("Movie updated successfully", response));
-    }
+                return ResponseEntity.status(HttpStatus.CREATED)
+                                .body(ApiResponse.success("Movie created successfully", response));
+        }
 
-    @GetMapping("/{movieId}")
-    @Operation(summary = "Get movie by ID")
-    public ResponseEntity<ApiResponse<MovieAdminResponse>> getMovie(
-            @PathVariable final UUID movieId) {
-        
-        final Movie movie = movieService.findById(movieId);
-        final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
-        
-        return ResponseEntity.ok(ApiResponse.success("Movie fetched successfully", response));
-    }
+        @PatchMapping("/{movieId}")
+        @Operation(summary = "Update existing movie")
+        public ResponseEntity<ApiResponse<MovieAdminResponse>> updateMovie(
+                        @PathVariable final UUID movieId,
+                        @Valid @RequestBody final UpdateMovieRequest request) {
 
-    @GetMapping
-    @Operation(
-        summary = "Get all movies (Admin)", 
-        description = "Retrieve a paginated list of movies with optional filtering. Admins can filter by any status.")
-    public ResponseEntity<ApiResponse<PagedResponse<MovieAdminResponse>>> getMovies(
-            @ModelAttribute final PagedFilterRequest<MovieFilterRequest> pagedFilterRequest) {
+                final Movie movie = movieService.update(movieId, request);
+                final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
 
-        final Pageable pageable = pagedFilterRequest.toPageable();
-        final MovieFilterRequest filters = pagedFilterRequest.getFiltersOrEmpty(MovieFilterRequest::new);
+                return ResponseEntity.ok(ApiResponse.success("Movie updated successfully", response));
+        }
 
-        final var pagedMovies = movieService.findAllForAdmin(pageable, filters);
-        final var pagedResponses = PagedResponse.of(pagedMovies, movieMapper::toAdminResponse);
+        @GetMapping("/{movieId}")
+        @Operation(summary = "Get movie by ID")
+        public ResponseEntity<ApiResponse<MovieAdminResponse>> getMovie(
+                        @PathVariable final UUID movieId) {
 
-        return ResponseEntity.ok(ApiResponse.success("Movies fetched successfully", pagedResponses));
-    }
+                final Movie movie = movieService.findById(movieId);
+                final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+
+                return ResponseEntity.ok(ApiResponse.success("Movie fetched successfully", response));
+        }
+
+        @GetMapping
+        @Operation(summary = "Get all movies (Admin)", description = "Retrieve a paginated list of movies with optional filtering. Admins can filter by any status.")
+        public ResponseEntity<ApiResponse<PagedResponse<MovieAdminResponse>>> getMovies(
+                        @ModelAttribute final PagedFilterRequest<MovieFilterRequest> pagedFilterRequest) {
+
+                final Pageable pageable = pagedFilterRequest.toPageable();
+                final MovieFilterRequest filters = pagedFilterRequest.getFiltersOrEmpty(MovieFilterRequest::new);
+
+                final var pagedMovies = movieService.findAllForAdmin(pageable, filters);
+                final var pagedResponses = PagedResponse.of(pagedMovies, movieMapper::toAdminResponse);
+
+                return ResponseEntity.ok(ApiResponse.success("Movies fetched successfully", pagedResponses));
+        }
 }
-

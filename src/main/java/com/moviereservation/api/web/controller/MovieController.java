@@ -97,4 +97,3 @@ public class MovieController {
         return ResponseEntity.ok(ApiResponse.success("Coming soon movies fetched successfully", response));
     }
 }
-

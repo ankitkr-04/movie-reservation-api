@@ -10,13 +10,14 @@ import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
 
 /**
  * JPA Specifications for Movie entity filtering.
- * Provides composable query predicates for different contexts (admin, customer).
+ * Provides composable query predicates for different contexts (admin,
+ * customer).
  */
 public class MovieSpecification {
 
     // Customer-visible statuses
-    private static final List<MovieStatus> CUSTOMER_VISIBLE_STATUSES = 
-        List.of(MovieStatus.ACTIVE, MovieStatus.COMING_SOON);
+    private static final List<MovieStatus> CUSTOMER_VISIBLE_STATUSES = List.of(MovieStatus.ACTIVE,
+            MovieStatus.COMING_SOON);
 
     /**
      * Base filter specification from MovieFilterRequest.
@@ -72,7 +73,8 @@ public class MovieSpecification {
     }
 
     /**
-     * Soft-delete filter (applied everywhere via @SQLRestriction, but explicit for clarity).
+     * Soft-delete filter (applied everywhere via @SQLRestriction, but explicit for
+     * clarity).
      */
     public static Specification<Movie> isNotDeleted() {
         return (root, _, cb) -> cb.isNull(root.get("deletedAt"));
@@ -147,7 +149,7 @@ public class MovieSpecification {
             if (allowedStatuses.isEmpty()) {
                 return spec.and(alwaysFalse());
             }
-            
+
             spec = spec.and(hasStatusIn(allowedStatuses));
         } else {
             // Default to visible statuses if no status filter provided

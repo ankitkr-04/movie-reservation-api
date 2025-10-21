@@ -23,7 +23,7 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@ToString(exclude = {"user", "showtime", "createdBy", "updatedBy", "reservationSeats"})
+@ToString(exclude = { "user", "showtime", "createdBy", "updatedBy", "reservationSeats" })
 public class Reservation {
 
     @Id
@@ -76,8 +76,10 @@ public class Reservation {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Reservation)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Reservation))
+            return false;
         Reservation that = (Reservation) o;
         return id != null && Objects.equals(id, that.id);
     }
@@ -87,4 +89,3 @@ public class Reservation {
         return getClass().hashCode();
     }
 }
-

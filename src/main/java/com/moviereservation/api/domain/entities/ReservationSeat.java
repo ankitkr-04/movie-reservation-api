@@ -6,17 +6,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Entity
 @Table(name = "reservation_seats")
 @Getter
 @Setter
-@ToString(exclude = {"reservation", "seatInstance"})
+@ToString(exclude = { "reservation", "seatInstance" })
 public class ReservationSeat {
 
     @EmbeddedId
@@ -37,8 +33,10 @@ public class ReservationSeat {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ReservationSeat)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof ReservationSeat))
+            return false;
         ReservationSeat that = (ReservationSeat) o;
         return id != null && Objects.equals(id, that.id);
     }
@@ -59,8 +57,10 @@ public class ReservationSeat {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof ReservationSeatId)) return false;
+            if (this == o)
+                return true;
+            if (!(o instanceof ReservationSeatId))
+                return false;
             ReservationSeatId that = (ReservationSeatId) o;
             return Objects.equals(reservationId, that.reservationId) &&
                     Objects.equals(seatInstanceId, that.seatInstanceId);

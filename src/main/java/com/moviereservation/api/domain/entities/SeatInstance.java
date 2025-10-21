@@ -26,7 +26,7 @@ import lombok.ToString;
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
-@ToString(exclude = {"showtime", "seatTemplate", "heldBy", "createdBy", "updatedBy"})
+@ToString(exclude = { "showtime", "seatTemplate", "heldBy", "createdBy", "updatedBy" })
 public class SeatInstance {
 
     @Id
@@ -87,8 +87,10 @@ public class SeatInstance {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof SeatInstance)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof SeatInstance))
+            return false;
         SeatInstance that = (SeatInstance) o;
         return id != null && Objects.equals(id, that.id);
     }
@@ -98,4 +100,3 @@ public class SeatInstance {
         return getClass().hashCode();
     }
 }
-

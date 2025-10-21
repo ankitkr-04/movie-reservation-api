@@ -21,7 +21,7 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@ToString(exclude = {"reservation", "user", "updatedBy"})
+@ToString(exclude = { "reservation", "user", "updatedBy" })
 public class Payment {
 
     @Id
@@ -76,8 +76,10 @@ public class Payment {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Payment)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Payment))
+            return false;
         Payment payment = (Payment) o;
         return id != null && Objects.equals(id, payment.id);
     }

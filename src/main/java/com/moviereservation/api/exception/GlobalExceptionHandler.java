@@ -45,13 +45,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleTypeMismatch(final MethodArgumentTypeMismatchException ex) {
         log.warn("Type mismatch for parameter '{}': {}", ex.getName(), ex.getMessage());
-        
+
         String message = "Invalid value for parameter '" + ex.getName() + "'";
         final Class<?> requiredType = ex.getRequiredType();
         if (requiredType != null && "UUID".equals(requiredType.getSimpleName())) {
             message = "Invalid UUID format for parameter '" + ex.getName() + "'";
         }
-        
+
         return ResponseEntity.badRequest().body(ApiResponse.error(message));
     }
 

@@ -22,7 +22,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class UserPrincipal implements UserDetails {
-    
+
     private final UUID userId;
     private final String email;
     private final String password;
@@ -70,4 +70,3 @@ public class UserPrincipal implements UserDetails {
         return true;
     }
 }
-

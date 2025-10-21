@@ -10,10 +10,9 @@ import com.moviereservation.api.web.dto.response.user.UserResponse;
  */
 @Mapper(componentModel = "spring")
 public interface UserMapper {
-    
+
     /**
      * Convert User entity to UserResponse DTO.
      */
     UserResponse toResponse(User user);
 }
-

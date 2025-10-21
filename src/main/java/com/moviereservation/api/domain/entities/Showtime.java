@@ -26,7 +26,7 @@ import lombok.ToString;
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
-@ToString(exclude = {"movie", "createdBy"}) // Avoid lazy loading and circular references
+@ToString(exclude = { "movie", "createdBy" }) // Avoid lazy loading and circular references
 public class Showtime {
 
     @Id
@@ -74,8 +74,10 @@ public class Showtime {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Showtime)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Showtime))
+            return false;
         Showtime showtime = (Showtime) o;
         return id != null && Objects.equals(id, showtime.id);
     }
@@ -85,4 +87,3 @@ public class Showtime {
         return getClass().hashCode();
     }
 }
-

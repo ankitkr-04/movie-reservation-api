@@ -11,8 +11,8 @@ import com.moviereservation.api.exception.EmailAlreadyExistsException;
 import com.moviereservation.api.exception.InvalidCredentialsException;
 import com.moviereservation.api.exception.PhoneAlreadyExistsException;
 import com.moviereservation.api.security.JwtTokenProvider;
-import com.moviereservation.api.web.dto.request.user.LoginRequest;
 import com.moviereservation.api.web.dto.request.user.CreateUserRequest;
+import com.moviereservation.api.web.dto.request.user.LoginRequest;
 import com.moviereservation.api.web.dto.response.user.AuthResponse;
 import com.moviereservation.api.web.mapper.UserMapper;
 
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-    
+
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;

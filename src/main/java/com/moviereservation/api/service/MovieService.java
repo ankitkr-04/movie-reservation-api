@@ -31,6 +31,7 @@ public class MovieService {
 
     /**
      * Create a new movie.
+     * 
      * @throws MovieAlreadyExistsException if title already exists
      */
     public Movie create(final CreateMovieRequest movieRequest) {
@@ -46,6 +47,7 @@ public class MovieService {
 
     /**
      * Update an existing movie.
+     * 
      * @throws MovieNotFoundException if movie not found
      */
     public Movie update(final UUID movieId, final UpdateMovieRequest request) {
@@ -56,6 +58,7 @@ public class MovieService {
 
     /**
      * Find movie by ID (admin access - includes all statuses).
+     * 
      * @throws MovieNotFoundException if not found
      */
     public Movie findById(final UUID movieId) {
@@ -85,6 +88,7 @@ public class MovieService {
 
     /**
      * Find movie by ID for customer (only visible statuses).
+     * 
      * @throws MovieNotFoundException if not found or not visible to customers
      */
     public Movie findByIdForCustomer(final UUID movieId) {
@@ -95,4 +99,3 @@ public class MovieService {
                 .orElseThrow(() -> new MovieNotFoundException(movieId.toString()));
     }
 }
-

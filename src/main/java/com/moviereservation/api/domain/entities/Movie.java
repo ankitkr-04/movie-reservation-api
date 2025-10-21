@@ -25,7 +25,7 @@ import lombok.ToString;
 @SQLRestriction("deleted_at IS NULL")
 @Getter
 @Setter
-@ToString(exclude = {"deletedBy"}) // Avoid circular references
+@ToString(exclude = { "deletedBy" }) // Avoid circular references
 public class Movie {
 
     @Id
@@ -75,13 +75,17 @@ public class Movie {
     private Instant updatedAt;
 
     /**
-     * Use only ID for equals/hashCode to maintain consistency across persistence contexts.
-     * This prevents issues with lazy loading and ensures proper behavior in collections.
+     * Use only ID for equals/hashCode to maintain consistency across persistence
+     * contexts.
+     * This prevents issues with lazy loading and ensures proper behavior in
+     * collections.
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Movie)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof Movie))
+            return false;
         Movie movie = (Movie) o;
         return id != null && Objects.equals(id, movie.id);
     }
@@ -91,4 +95,3 @@ public class Movie {
         return getClass().hashCode();
     }
 }
-
