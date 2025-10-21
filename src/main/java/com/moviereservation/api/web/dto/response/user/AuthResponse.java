@@ -1,4 +1,4 @@
-package com.moviereservation.api.web.dto.response;
+package com.moviereservation.api.web.dto.response.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

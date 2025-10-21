@@ -1,4 +1,4 @@
-package com.moviereservation.api.web.dto.response;
+package com.moviereservation.api.web.dto.response.user;
 
 import java.util.UUID;
 

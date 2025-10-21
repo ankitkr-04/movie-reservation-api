@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.RestController;
 import com.moviereservation.api.constant.Route;
 import com.moviereservation.api.domain.entities.User;
 import com.moviereservation.api.service.AuthService;
-import com.moviereservation.api.web.dto.request.LoginUserRequest;
-import com.moviereservation.api.web.dto.request.RegisterUserRequest;
-import com.moviereservation.api.web.dto.response.AuthResponse;
-import com.moviereservation.api.web.dto.response.UserResponse;
+import com.moviereservation.api.web.dto.request.user.LoginUserRequest;
+import com.moviereservation.api.web.dto.request.user.RegisterUserRequest;
+import com.moviereservation.api.web.dto.response.user.AuthResponse;
+import com.moviereservation.api.web.dto.response.user.UserResponse;
 import com.moviereservation.api.web.dto.response.wrappers.ApiResponse;
 import com.moviereservation.api.web.mapper.UserMapper;
 
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping(Route.REGISTER_USER)
+    @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponse>> registerUser(
             @RequestBody @Valid final RegisterUserRequest request) {
         // Implementation for user registration
@@ -37,7 +37,7 @@ public class AuthController {
                 ApiResponse.success("User registered Successfully", userResponse));
     }
 
-    @PostMapping(Route.LOGIN_USER)
+    @PostMapping("/login")
     public ResponseEntity<ApiResponse<AuthResponse>> loginUser(@RequestBody @Valid final LoginUserRequest request) {
         final AuthResponse authResponse = authService.loginUser(request);
 

@@ -1,4 +1,4 @@
-package com.moviereservation.api.web.dto.request;
+package com.moviereservation.api.web.dto.request.user;
 
 import com.moviereservation.api.validation.password.ValidPassword;
 

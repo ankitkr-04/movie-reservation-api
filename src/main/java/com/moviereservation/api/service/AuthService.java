@@ -11,9 +11,9 @@ import com.moviereservation.api.exception.business.EmailAlreadyExistsException;
 import com.moviereservation.api.exception.business.InvalidCredentialsException;
 import com.moviereservation.api.exception.business.PhoneAlreadyExistsException;
 import com.moviereservation.api.security.JwtTokenProvider;
-import com.moviereservation.api.web.dto.request.LoginUserRequest;
-import com.moviereservation.api.web.dto.request.RegisterUserRequest;
-import com.moviereservation.api.web.dto.response.AuthResponse;
+import com.moviereservation.api.web.dto.request.user.LoginUserRequest;
+import com.moviereservation.api.web.dto.request.user.RegisterUserRequest;
+import com.moviereservation.api.web.dto.response.user.AuthResponse;
 import com.moviereservation.api.web.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;

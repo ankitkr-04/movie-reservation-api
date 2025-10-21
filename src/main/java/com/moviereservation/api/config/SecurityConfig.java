@@ -2,6 +2,7 @@ package com.moviereservation.api.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -64,6 +65,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         // Public endpoints
                         .requestMatchers(Route.AUTH + "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, Route.MOVIES + "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, Route.SHOWTIMES + "/**").permitAll()
+
+                        // Admin endpoints
+                        .requestMatchers(Route.ADMIN + "/**").hasRole("ADMIN")
+
                         // All other endpoints require authentication
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
