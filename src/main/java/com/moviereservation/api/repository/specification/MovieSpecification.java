@@ -24,7 +24,7 @@ public class MovieSpecification {
      * Does NOT include role-based status filtering - that's handled separately.
      */
     public static Specification<Movie> withFilters(final MovieFilterRequest filters) {
-        return (root, query, cb) -> {
+        return (root, _, cb) -> {
             var predicates = cb.conjunction();
 
             if (filters.getTitle() != null && !filters.getTitle().isBlank()) {

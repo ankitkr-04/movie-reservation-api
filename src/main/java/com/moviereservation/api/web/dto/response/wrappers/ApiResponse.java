@@ -3,6 +3,7 @@ package com.moviereservation.api.web.dto.response.wrappers;
 import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import lombok.Getter;
@@ -14,6 +15,7 @@ public class ApiResponse<T> {
     private String message;
     private T data;
     private List<String> errors;
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant timestamp;
 
     // Success with data

@@ -95,7 +95,7 @@ public class MovieService {
         return movieRepository.findOne(
                 MovieSpecification.isNotDeleted()
                         .and(MovieSpecification.isVisibleToCustomers())
-                        .and((root, query, cb) -> cb.equal(root.get("id"), movieId)))
+                        .and((root, _, cb) -> cb.equal(root.get("id"), movieId)))
                 .orElseThrow(() -> new MovieNotFoundException(movieId.toString()));
     }
 }
