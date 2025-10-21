@@ -30,4 +30,19 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID>,
     boolean existsByShowtimeMovieIdAndStatusIn(@Param("movieId") UUID movieId,
             @Param("statuses") ReservationStatus... statuses);
 
+    /**
+     * Check if a showtime has any reservations with specific statuses.
+     * Used to check for active reservations for a showtime.
+     * 
+     * @param showtimeId
+     * @param statuses
+     * @return true if reservations with given statuses exist
+     */
+    @Query("""
+            SELECT CASE WHEN COUNT(r) > 0 THEN true ELSE false END\
+            FROM Reservation r \
+            WHERE r.showtime.id = :showtimeId \
+            AND r.status IN :statuses""")
+    boolean existsByShowtimeIdAndStatusIn(UUID showtimeId, ReservationStatus... statuses);
+
 }
