@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -13,12 +14,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.moviereservation.api.domain.enums.ReservationStatus;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "reservations")
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"user", "showtime", "createdBy", "updatedBy", "reservationSeats"})
 public class Reservation {
 
     @Id
@@ -68,4 +73,18 @@ public class Reservation {
         reservationSeats.add(reservationSeat);
         reservationSeat.setReservation(this);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Reservation)) return false;
+        Reservation that = (Reservation) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

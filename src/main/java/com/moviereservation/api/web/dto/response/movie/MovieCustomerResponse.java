@@ -8,26 +8,26 @@ import com.moviereservation.api.domain.enums.MovieStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+/**
+ * Movie response DTO for customer-facing endpoints.
+ * Excludes administrative metadata like createdAt/updatedAt.
+ */
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MovieResponse {
+public class MovieCustomerResponse {
 
     private UUID id;
     private String title;
     private String description;
-    private Integer duration;
+    private Integer duration; // in minutes
     private Genre genre;
     private Instant releaseDate;
     private String posterUrl;
     private String rating;
     private MovieStatus status;
-
-    //additional metadata
-    private Instant createdAt;
-    private Instant updatedAt;
 }

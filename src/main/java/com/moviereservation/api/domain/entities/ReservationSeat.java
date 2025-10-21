@@ -7,12 +7,16 @@ import java.util.UUID;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "reservation_seats")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"reservation", "seatInstance"})
 public class ReservationSeat {
 
     @EmbeddedId
@@ -31,8 +35,22 @@ public class ReservationSeat {
     @Column(name = "price_paid", nullable = false, precision = 10, scale = 2)
     private BigDecimal pricePaid;
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ReservationSeat)) return false;
+        ReservationSeat that = (ReservationSeat) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
+
     @Embeddable
-    @Data
+    @Getter
+    @Setter
     @NoArgsConstructor
     @AllArgsConstructor
     public static class ReservationSeatId implements Serializable {
@@ -41,10 +59,8 @@ public class ReservationSeat {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (o == null || getClass() != o.getClass())
-                return false;
+            if (this == o) return true;
+            if (!(o instanceof ReservationSeatId)) return false;
             ReservationSeatId that = (ReservationSeatId) o;
             return Objects.equals(reservationId, that.reservationId) &&
                     Objects.equals(seatInstanceId, that.seatInstanceId);

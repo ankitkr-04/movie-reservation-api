@@ -1,6 +1,7 @@
 package com.moviereservation.api.domain.entities;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
@@ -13,14 +14,18 @@ import com.moviereservation.api.domain.enums.Genre;
 import com.moviereservation.api.domain.enums.MovieStatus;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "movies")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE movies SET deleted_at = CURRENT_TIMESTAMP WHERE movie_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"deletedBy"}) // Avoid circular references
 public class Movie {
 
     @Id
@@ -68,4 +73,22 @@ public class Movie {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    /**
+     * Use only ID for equals/hashCode to maintain consistency across persistence contexts.
+     * This prevents issues with lazy loading and ensures proper behavior in collections.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Movie)) return false;
+        Movie movie = (Movie) o;
+        return id != null && Objects.equals(id, movie.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

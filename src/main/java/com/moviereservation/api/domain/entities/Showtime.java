@@ -2,6 +2,7 @@ package com.moviereservation.api.domain.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
@@ -10,17 +11,22 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.moviereservation.api.constant.MovieConstants;
 import com.moviereservation.api.domain.enums.ShowtimeStatus;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "showtimes")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE showtimes SET deleted_at = CURRENT_TIMESTAMP WHERE showtime_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"movie", "createdBy"}) // Avoid lazy loading and circular references
 public class Showtime {
 
     @Id
@@ -49,7 +55,7 @@ public class Showtime {
     private ShowtimeStatus status = ShowtimeStatus.SCHEDULED;
 
     @Column(name = "available_seats_count", nullable = false)
-    private Short availableSeatsCount = 120;
+    private Short availableSeatsCount = MovieConstants.DEFAULT_AVAILABLE_SEATS;
 
     @Column(name = "deleted_at")
     private Instant deletedAt;
@@ -65,4 +71,18 @@ public class Showtime {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Showtime)) return false;
+        Showtime showtime = (Showtime) o;
+        return id != null && Objects.equals(id, showtime.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

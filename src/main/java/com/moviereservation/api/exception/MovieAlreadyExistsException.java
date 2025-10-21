@@ -1,8 +1,6 @@
-package com.moviereservation.api.exception.business.movie;
+package com.moviereservation.api.exception;
 
 import org.springframework.http.HttpStatus;
-
-import com.moviereservation.api.exception.BusinessException;
 
 public class MovieAlreadyExistsException extends BusinessException {
     public MovieAlreadyExistsException(final String title) {

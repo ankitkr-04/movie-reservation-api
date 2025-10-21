@@ -10,10 +10,14 @@ import com.moviereservation.api.domain.enums.MovieStatus;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Data
+/**
+ * Request DTO for creating a new movie.
+ * Immutable - use builder pattern.
+ */
+@Getter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

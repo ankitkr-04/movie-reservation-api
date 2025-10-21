@@ -13,8 +13,8 @@ import com.moviereservation.api.domain.entities.Movie;
 import com.moviereservation.api.domain.enums.MovieStatus;
 import com.moviereservation.api.service.MovieService;
 import com.moviereservation.api.web.dto.request.PagedFilterRequest;
-import com.moviereservation.api.web.dto.request.movie.FilterMovieRequest;
-import com.moviereservation.api.web.dto.response.movie.MovieResponse;
+import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
+import com.moviereservation.api.web.dto.response.movie.MovieCustomerResponse;
 import com.moviereservation.api.web.dto.response.wrappers.ApiResponse;
 import com.moviereservation.api.web.dto.response.wrappers.PagedResponse;
 import com.moviereservation.api.web.mapper.MovieMapper;
@@ -24,6 +24,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Public movie browsing endpoints for customers.
+ */
 @RestController
 @RequestMapping(Route.MOVIES)
 @Tag(name = "Movies", description = "Public movie browsing for customers")
@@ -34,59 +37,64 @@ public class MovieController {
     private final MovieMapper movieMapper;
 
     @GetMapping
-    @Operation(summary = "Browse movies (Customer)")
-    public ResponseEntity<ApiResponse<PagedResponse<MovieResponse>>> getAllMovies(
-            @ModelAttribute @Valid PagedFilterRequest<FilterMovieRequest> request) {
+    @Operation(summary = "Browse all movies (Customer)")
+    public ResponseEntity<ApiResponse<PagedResponse<MovieCustomerResponse>>> getAllMovies(
+            @ModelAttribute @Valid PagedFilterRequest<MovieFilterRequest> request) {
 
         final Pageable pageable = request.toPageable();
-        final FilterMovieRequest filters = request.getFiltersOrEmpty(FilterMovieRequest::new);
+        final MovieFilterRequest filters = request.getFiltersOrEmpty(MovieFilterRequest::new);
 
-        final Page<Movie> movies = movieService.getAllMoviesForCustomer(pageable, filters);
-        final PagedResponse<MovieResponse> response = PagedResponse.of(movies, movieMapper::toCustomerResponse);
+        final Page<Movie> movies = movieService.findAllForCustomer(pageable, filters);
+        final PagedResponse<MovieCustomerResponse> response = PagedResponse.of(movies, movieMapper::toCustomerResponse);
 
-        // WRAP in ApiResponse for consistency
         return ResponseEntity.ok(ApiResponse.success("Movies fetched successfully", response));
     }
 
     @GetMapping("/{movieId}")
     @Operation(summary = "Get movie details (Customer)")
-    public ResponseEntity<ApiResponse<MovieResponse>> getMovieById(@PathVariable final UUID movieId) {
-        final Movie movie = movieService.getMovieByIdForCustomer(movieId); // CHANGED
+    public ResponseEntity<ApiResponse<MovieCustomerResponse>> getMovieById(
+            @PathVariable final UUID movieId) {
+        final Movie movie = movieService.findByIdForCustomer(movieId);
         return ResponseEntity.ok(ApiResponse.success(
                 "Movie fetched successfully", movieMapper.toCustomerResponse(movie)));
     }
 
     @GetMapping("/active")
     @Operation(summary = "Get only active movies")
-    public ResponseEntity<ApiResponse<PagedResponse<MovieResponse>>> getActiveMovies(
-            @ModelAttribute @Valid PagedFilterRequest<FilterMovieRequest> request) {
+    public ResponseEntity<ApiResponse<PagedResponse<MovieCustomerResponse>>> getActiveMovies(
+            @ModelAttribute @Valid PagedFilterRequest<MovieFilterRequest> request) {
 
         final Pageable pageable = request.toPageable();
-        final FilterMovieRequest filters = request.getFiltersOrEmpty(FilterMovieRequest::new);
+        final MovieFilterRequest filters = request.getFiltersOrEmpty(MovieFilterRequest::new);
 
-        // FORCE ACTIVE status only
-        filters.setStatuses(List.of(MovieStatus.ACTIVE));
+        // Create new filter instance with ACTIVE status (immutable approach)
+        final MovieFilterRequest activeFilter = filters.toBuilder()
+                .statuses(List.of(MovieStatus.ACTIVE))
+                .build();
 
-        final Page<Movie> movies = movieService.getAllMoviesForCustomer(pageable, filters);
-        final PagedResponse<MovieResponse> response = PagedResponse.of(movies, movieMapper::toCustomerResponse);
+        final Page<Movie> movies = movieService.findAllForCustomer(pageable, activeFilter);
+        final PagedResponse<MovieCustomerResponse> response = PagedResponse.of(movies, movieMapper::toCustomerResponse);
 
         return ResponseEntity.ok(ApiResponse.success("Active movies fetched successfully", response));
     }
 
     @GetMapping("/coming-soon")
     @Operation(summary = "Get upcoming movies")
-    public ResponseEntity<ApiResponse<PagedResponse<MovieResponse>>> getComingSoonMovies(
-            @ModelAttribute @Valid PagedFilterRequest<FilterMovieRequest> request) {
+    public ResponseEntity<ApiResponse<PagedResponse<MovieCustomerResponse>>> getComingSoonMovies(
+            @ModelAttribute @Valid PagedFilterRequest<MovieFilterRequest> request) {
 
         final Pageable pageable = request.toPageable();
-        final FilterMovieRequest filters = request.getFiltersOrEmpty(FilterMovieRequest::new);
+        final MovieFilterRequest filters = request.getFiltersOrEmpty(MovieFilterRequest::new);
 
-        // FORCE COMING_SOON status only
-        filters.setStatuses(List.of(MovieStatus.COMING_SOON));
+        // Create new filter instance with COMING_SOON status (immutable approach)
+        final MovieFilterRequest comingSoonFilter = filters.toBuilder()
+                .statuses(List.of(MovieStatus.COMING_SOON))
+                .build();
 
-        final Page<Movie> movies = movieService.getAllMoviesForCustomer(pageable, filters);
-        final PagedResponse<MovieResponse> response = PagedResponse.of(movies, movieMapper::toCustomerResponse);
+        final Page<Movie> movies = movieService.findAllForCustomer(pageable, comingSoonFilter);
+        final PagedResponse<MovieCustomerResponse> response = PagedResponse.of(movies, movieMapper::toCustomerResponse);
 
         return ResponseEntity.ok(ApiResponse.success("Coming soon movies fetched successfully", response));
     }
 }
+

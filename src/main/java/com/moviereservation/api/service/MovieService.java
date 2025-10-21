@@ -7,17 +7,21 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.moviereservation.api.domain.entities.Movie;
-import com.moviereservation.api.exception.business.movie.MovieAlreadyExistsException;
-import com.moviereservation.api.exception.business.movie.MovieNotFoundException;
+import com.moviereservation.api.exception.MovieAlreadyExistsException;
+import com.moviereservation.api.exception.MovieNotFoundException;
 import com.moviereservation.api.repository.MovieRepository;
 import com.moviereservation.api.repository.specification.MovieSpecification;
 import com.moviereservation.api.web.dto.request.movie.CreateMovieRequest;
-import com.moviereservation.api.web.dto.request.movie.FilterMovieRequest;
+import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
 import com.moviereservation.api.web.dto.request.movie.UpdateMovieRequest;
 import com.moviereservation.api.web.mapper.MovieMapper;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service layer for Movie operations.
+ * Handles business logic and delegates to repository.
+ */
 @Service
 @RequiredArgsConstructor
 public class MovieService {
@@ -25,7 +29,11 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieMapper movieMapper;
 
-    public Movie createMovie(final CreateMovieRequest movieRequest) {
+    /**
+     * Create a new movie.
+     * @throws MovieAlreadyExistsException if title already exists
+     */
+    public Movie create(final CreateMovieRequest movieRequest) {
         if (movieRepository.existsByTitle(movieRequest.getTitle())) {
             throw new MovieAlreadyExistsException(movieRequest.getTitle());
         }
@@ -34,42 +42,57 @@ public class MovieService {
         movieMapper.toEntity(movieRequest, movie);
 
         return movieRepository.save(movie);
-
     }
 
-    public Movie updateMovie(final UUID movieId,
-            final UpdateMovieRequest request) {
-        final Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new MovieNotFoundException(movieId.toString()));
-
+    /**
+     * Update an existing movie.
+     * @throws MovieNotFoundException if movie not found
+     */
+    public Movie update(final UUID movieId, final UpdateMovieRequest request) {
+        final Movie movie = findById(movieId);
         movieMapper.toEntity(request, movie);
-
         return movieRepository.save(movie);
     }
 
-    public Movie getMovieById(final UUID movieId) {
+    /**
+     * Find movie by ID (admin access - includes all statuses).
+     * @throws MovieNotFoundException if not found
+     */
+    public Movie findById(final UUID movieId) {
         return movieRepository.findById(movieId)
                 .orElseThrow(() -> new MovieNotFoundException(movieId.toString()));
     }
 
-    public Page<Movie> getAllMoviesForAdmin(final Pageable pageable, final FilterMovieRequest filters) {
+    /**
+     * Find all movies for admin with filters and pagination.
+     * Includes all movie statuses.
+     */
+    public Page<Movie> findAllForAdmin(final Pageable pageable, final MovieFilterRequest filters) {
         return movieRepository.findAll(
                 MovieSpecification.forAdmin(filters),
                 pageable);
     }
 
-    public Page<Movie> getAllMoviesForCustomer(final Pageable pageable, final FilterMovieRequest filters) {
+    /**
+     * Find all movies for customers with filters and pagination.
+     * Automatically restricts to customer-visible statuses.
+     */
+    public Page<Movie> findAllForCustomer(final Pageable pageable, final MovieFilterRequest filters) {
         return movieRepository.findAll(
                 MovieSpecification.forCustomer(filters),
                 pageable);
     }
 
-    public Movie getMovieByIdForCustomer(final UUID movieId) {
+    /**
+     * Find movie by ID for customer (only visible statuses).
+     * @throws MovieNotFoundException if not found or not visible to customers
+     */
+    public Movie findByIdForCustomer(final UUID movieId) {
         return movieRepository.findOne(
                 MovieSpecification.isNotDeleted()
                         .and(MovieSpecification.isVisibleToCustomers())
-                        .and((root, _, cb) -> cb.equal(root.get("id"), movieId)))
+                        .and((root, query, cb) -> cb.equal(root.get("id"), movieId)))
                 .orElseThrow(() -> new MovieNotFoundException(movieId.toString()));
     }
-
 }
+

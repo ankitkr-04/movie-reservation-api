@@ -2,6 +2,7 @@ package com.moviereservation.api.domain.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
@@ -14,14 +15,18 @@ import com.moviereservation.api.domain.enums.SeatStatus;
 import com.moviereservation.api.domain.enums.SeatType;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "seat_instance")
 @EntityListeners(AuditingEntityListener.class)
 @SQLDelete(sql = "UPDATE seat_instance SET deleted_at = CURRENT_TIMESTAMP WHERE seat_instance_id = ?")
 @SQLRestriction("deleted_at IS NULL")
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"showtime", "seatTemplate", "heldBy", "createdBy", "updatedBy"})
 public class SeatInstance {
 
     @Id
@@ -79,4 +84,18 @@ public class SeatInstance {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SeatInstance)) return false;
+        SeatInstance that = (SeatInstance) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

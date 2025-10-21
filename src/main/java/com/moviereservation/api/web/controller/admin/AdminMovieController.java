@@ -3,6 +3,7 @@ package com.moviereservation.api.web.controller.admin;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,9 +12,9 @@ import com.moviereservation.api.domain.entities.Movie;
 import com.moviereservation.api.service.MovieService;
 import com.moviereservation.api.web.dto.request.PagedFilterRequest;
 import com.moviereservation.api.web.dto.request.movie.CreateMovieRequest;
-import com.moviereservation.api.web.dto.request.movie.FilterMovieRequest;
+import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
 import com.moviereservation.api.web.dto.request.movie.UpdateMovieRequest;
-import com.moviereservation.api.web.dto.response.movie.MovieResponse;
+import com.moviereservation.api.web.dto.response.movie.MovieAdminResponse;
 import com.moviereservation.api.web.dto.response.wrappers.ApiResponse;
 import com.moviereservation.api.web.dto.response.wrappers.PagedResponse;
 import com.moviereservation.api.web.mapper.MovieMapper;
@@ -23,60 +24,68 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Admin endpoints for movie management.
+ * Full CRUD access with no status restrictions.
+ */
 @RestController
-@RequestMapping(Route.ADMIN_MOVIES)
+@RequestMapping(Route.ADMIN + "/movies")
 @Tag(name = "Admin - Movies", description = "Movie management for administrators")
 @RequiredArgsConstructor
 public class AdminMovieController {
-        private final MovieService movieService;
-        private final MovieMapper movieMapper;
+    
+    private final MovieService movieService;
+    private final MovieMapper movieMapper;
 
-        @PostMapping
-        public ResponseEntity<ApiResponse<MovieResponse>> createMovie(
-                        @Valid @RequestBody final CreateMovieRequest request) {
+    @PostMapping
+    @Operation(summary = "Create new movie")
+    public ResponseEntity<ApiResponse<MovieAdminResponse>> createMovie(
+            @Valid @RequestBody final CreateMovieRequest request) {
 
-                final Movie movie = movieService.createMovie(request);
+        final Movie movie = movieService.create(request);
+        final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
 
-                final MovieResponse movieResponse = movieMapper.toAdminResponse(movie);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Movie created successfully", response));
+    }
 
-                return ResponseEntity.ok(
-                                ApiResponse.success("Movie created successfully", movieResponse));
+    @PatchMapping("/{movieId}")
+    @Operation(summary = "Update existing movie")
+    public ResponseEntity<ApiResponse<MovieAdminResponse>> updateMovie(
+            @PathVariable final UUID movieId,
+            @Valid @RequestBody final UpdateMovieRequest request) {
+        
+        final Movie movie = movieService.update(movieId, request);
+        final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+        
+        return ResponseEntity.ok(ApiResponse.success("Movie updated successfully", response));
+    }
 
-        }
+    @GetMapping("/{movieId}")
+    @Operation(summary = "Get movie by ID")
+    public ResponseEntity<ApiResponse<MovieAdminResponse>> getMovie(
+            @PathVariable final UUID movieId) {
+        
+        final Movie movie = movieService.findById(movieId);
+        final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+        
+        return ResponseEntity.ok(ApiResponse.success("Movie fetched successfully", response));
+    }
 
-        @PatchMapping("/{movieId}")
-        public ResponseEntity<ApiResponse<MovieResponse>> updateMovie(
-                        @PathVariable final UUID movieId,
-                        @Valid @RequestBody final UpdateMovieRequest request) {
-                final Movie movie = movieService.updateMovie(movieId, request);
-                final MovieResponse movieResponse = movieMapper.toAdminResponse(movie);
-                return ResponseEntity.ok(
-                                ApiResponse.success("Movie updated successfully", movieResponse));
-        }
+    @GetMapping
+    @Operation(
+        summary = "Get all movies (Admin)", 
+        description = "Retrieve a paginated list of movies with optional filtering. Admins can filter by any status.")
+    public ResponseEntity<ApiResponse<PagedResponse<MovieAdminResponse>>> getMovies(
+            @ModelAttribute final PagedFilterRequest<MovieFilterRequest> pagedFilterRequest) {
 
-        @GetMapping("/{movieId}")
-        public ResponseEntity<ApiResponse<MovieResponse>> getMovie(
-                        @PathVariable final UUID movieId) {
-                final Movie movie = movieService.getMovieById(movieId);
-                final MovieResponse movieResponse = movieMapper.toAdminResponse(movie);
-                return ResponseEntity.ok(
-                                ApiResponse.success("Movie fetched successfully", movieResponse));
-        }
+        final Pageable pageable = pagedFilterRequest.toPageable();
+        final MovieFilterRequest filters = pagedFilterRequest.getFiltersOrEmpty(MovieFilterRequest::new);
 
-        @GetMapping
-        @Operation(summary = "Get all movies (Admin)", description = "Retrieve a paginated list of movies with optional filtering. Admins can filter by any status.")
-        public ResponseEntity<ApiResponse<PagedResponse<MovieResponse>>> getMovies(
-                        @ModelAttribute final PagedFilterRequest<FilterMovieRequest> pagedFilterRequest) {
+        final var pagedMovies = movieService.findAllForAdmin(pageable, filters);
+        final var pagedResponses = PagedResponse.of(pagedMovies, movieMapper::toAdminResponse);
 
-                final Pageable pageable = pagedFilterRequest.toPageable();
-                final FilterMovieRequest filters = pagedFilterRequest.getFiltersOrEmpty(FilterMovieRequest::new);
-
-                final var pagedMovies = movieService.getAllMoviesForAdmin(pageable, filters);
-                final var pagedMovieResponses = PagedResponse.of(pagedMovies, movieMapper::toAdminResponse);
-
-                return ResponseEntity.ok(
-                                ApiResponse.success("Movies fetched successfully", pagedMovieResponses));
-
-        }
-
+        return ResponseEntity.ok(ApiResponse.success("Movies fetched successfully", pagedResponses));
+    }
 }
+

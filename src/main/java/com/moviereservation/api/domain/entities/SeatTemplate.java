@@ -2,6 +2,7 @@ package com.moviereservation.api.domain.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -11,12 +12,14 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.moviereservation.api.domain.enums.SeatType;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "seat_template")
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Getter
+@Setter
 public class SeatTemplate {
 
     @Id
@@ -47,4 +50,18 @@ public class SeatTemplate {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SeatTemplate)) return false;
+        SeatTemplate that = (SeatTemplate) o;
+        return id != null && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
+    
     private final UserRepository userRepository;
 
     @Override
@@ -22,15 +23,15 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserPrincipal loadUserByUsername(final String email) throws UsernameNotFoundException {
         final User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(
-                        "User not found with email : " + email));
-        return UserPrincipalImpl.create(user);
+                        "User not found with email: " + email));
+        return UserPrincipal.from(user);
     }
 
     @Transactional(readOnly = true)
     public UserPrincipal loadUserById(final UUID userId) {
-        final User user = userRepository.findById(userId).orElseThrow(
-                () -> new UsernameNotFoundException("User not found with id : " + userId));
-        return UserPrincipalImpl.create(user);
-
+        final User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "User not found with id: " + userId));
+        return UserPrincipal.from(user);
     }
 }

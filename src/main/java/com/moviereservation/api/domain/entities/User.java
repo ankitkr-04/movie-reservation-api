@@ -1,6 +1,7 @@
 package com.moviereservation.api.domain.entities;
 
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -10,14 +11,18 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.moviereservation.api.domain.enums.UserRole;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "users")
 @EntityListeners(AuditingEntityListener.class)
-@Data
-
+@Getter
+@Setter
+@ToString(exclude = {"passwordHash"}) // Never include password in toString
 public class User {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
@@ -47,4 +52,20 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    /**
+     * Use only ID for equals/hashCode to maintain consistency across persistence contexts.
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof User)) return false;
+        User user = (User) o;
+        return id != null && Objects.equals(id, user.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
+

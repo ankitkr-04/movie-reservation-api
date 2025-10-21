@@ -2,6 +2,7 @@ package com.moviereservation.api.domain.entities;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
@@ -11,12 +12,16 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.moviereservation.api.domain.enums.PaymentStatus;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "payments")
 @EntityListeners(AuditingEntityListener.class)
-@Data
+@Getter
+@Setter
+@ToString(exclude = {"reservation", "user", "updatedBy"})
 public class Payment {
 
     @Id
@@ -46,13 +51,13 @@ public class Payment {
     private String paymentMethod = "STRIPE";
 
     @Column(name = "stripe_payment_intent_id", nullable = false, unique = true)
-    private String stripePaymentIntentId;
+    private String paymentIntentId; // Simplified field name
 
     @Column(name = "stripe_charge_id")
-    private String stripeChargeId;
+    private String chargeId; // Simplified field name
 
     @Column(name = "stripe_customer_id")
-    private String stripeCustomerId;
+    private String customerId; // Simplified field name
 
     @Column(name = "attempt_number", nullable = false)
     private Short attemptNumber = 1;
@@ -68,4 +73,17 @@ public class Payment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private User updatedBy;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Payment)) return false;
+        Payment payment = (Payment) o;
+        return id != null && Objects.equals(id, payment.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

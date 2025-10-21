@@ -7,26 +7,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.moviereservation.api.domain.entities.User;
-import com.moviereservation.api.exception.business.EmailAlreadyExistsException;
-import com.moviereservation.api.exception.business.InvalidCredentialsException;
-import com.moviereservation.api.exception.business.PhoneAlreadyExistsException;
+import com.moviereservation.api.exception.EmailAlreadyExistsException;
+import com.moviereservation.api.exception.InvalidCredentialsException;
+import com.moviereservation.api.exception.PhoneAlreadyExistsException;
 import com.moviereservation.api.security.JwtTokenProvider;
-import com.moviereservation.api.web.dto.request.user.LoginUserRequest;
-import com.moviereservation.api.web.dto.request.user.RegisterUserRequest;
+import com.moviereservation.api.web.dto.request.user.LoginRequest;
+import com.moviereservation.api.web.dto.request.user.CreateUserRequest;
 import com.moviereservation.api.web.dto.response.user.AuthResponse;
 import com.moviereservation.api.web.mapper.UserMapper;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Service for authentication operations: registration and login.
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthService {
+    
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserService userService;
+    private final UserMapper userMapper; // Inject MapStruct mapper
 
     @Transactional
-    public User registerUser(final RegisterUserRequest request) {
+    public User registerUser(final CreateUserRequest request) {
 
         if (userService.isEmailTaken(request.getEmail())) {
             throw new EmailAlreadyExistsException(request.getEmail());
@@ -50,7 +55,7 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public AuthResponse loginUser(final LoginUserRequest request) {
+    public AuthResponse loginUser(final LoginRequest request) {
         final Optional<User> res = userService.getUserByEmail(request.getEmail());
 
         if (res.isEmpty()) {
@@ -68,7 +73,7 @@ public class AuthService {
         final Long expiresIn = jwtTokenProvider.getExpiryDuration();
 
         return AuthResponse.builder()
-                .user(UserMapper.toResponse(user))
+                .user(userMapper.toResponse(user))
                 .accessToken(token)
                 .expiresIn(expiresIn)
                 .build();

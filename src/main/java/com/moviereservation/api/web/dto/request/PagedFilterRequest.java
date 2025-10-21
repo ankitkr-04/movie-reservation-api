@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 import org.springframework.data.domain.Pageable;
 
 import com.moviereservation.api.constant.PaginationDefaults;
-import com.moviereservation.api.domain.enums.UserRole;
 import com.moviereservation.api.util.PaginationUtil;
 
 import io.swagger.v3.oas.annotations.Parameter;
@@ -76,18 +75,5 @@ public class PagedFilterRequest<F> {
      */
     public F getFiltersOrEmpty(final Supplier<F> emptySupplier) {
         return filters != null ? filters : emptySupplier.get();
-    }
-
-    /**
-     * Get filters with role-based validation applied.
-     */
-    public F getValidatedFilters(final UserRole role, final Supplier<F> emptySupplier) {
-        F filter = filters != null ? filters : emptySupplier.get();
-
-        if (filter instanceof ValidatableFilter validatable) {
-            validatable.validateForRole(role);
-        }
-
-        return filter;
     }
 }

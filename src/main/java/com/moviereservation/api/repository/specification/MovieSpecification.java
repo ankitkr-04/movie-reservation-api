@@ -6,16 +6,24 @@ import org.springframework.data.jpa.domain.Specification;
 
 import com.moviereservation.api.domain.entities.Movie;
 import com.moviereservation.api.domain.enums.MovieStatus;
-import com.moviereservation.api.web.dto.request.movie.FilterMovieRequest;
+import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
 
+/**
+ * JPA Specifications for Movie entity filtering.
+ * Provides composable query predicates for different contexts (admin, customer).
+ */
 public class MovieSpecification {
 
+    // Customer-visible statuses
+    private static final List<MovieStatus> CUSTOMER_VISIBLE_STATUSES = 
+        List.of(MovieStatus.ACTIVE, MovieStatus.COMING_SOON);
+
     /**
-     * Base filter specification from FilterMovieRequest.
+     * Base filter specification from MovieFilterRequest.
      * Does NOT include role-based status filtering - that's handled separately.
      */
-    public static Specification<Movie> withFilters(final FilterMovieRequest filters) {
-        return (root, _, cb) -> {
+    public static Specification<Movie> withFilters(final MovieFilterRequest filters) {
+        return (root, query, cb) -> {
             var predicates = cb.conjunction();
 
             if (filters.getTitle() != null && !filters.getTitle().isBlank()) {
@@ -26,10 +34,8 @@ public class MovieSpecification {
             }
 
             // Only apply status filter if explicitly provided AND not empty
-            // (Customer endpoints will override this anyway)
             if (filters.getStatuses() != null && !filters.getStatuses().isEmpty()) {
-                predicates = cb.and(predicates,
-                        root.get("status").in(filters.getStatuses()));
+                predicates = cb.and(predicates, root.get("status").in(filters.getStatuses()));
             }
 
             if (filters.getGenres() != null && !filters.getGenres().isEmpty()) {
@@ -66,11 +72,17 @@ public class MovieSpecification {
     }
 
     /**
-     * Soft-delete filter (applied everywhere via @SQLRestriction, but explicit for
-     * clarity).
+     * Soft-delete filter (applied everywhere via @SQLRestriction, but explicit for clarity).
      */
     public static Specification<Movie> isNotDeleted() {
         return (root, _, cb) -> cb.isNull(root.get("deletedAt"));
+    }
+
+    /**
+     * Filter movies by a list of statuses.
+     */
+    public static Specification<Movie> hasStatusIn(final List<MovieStatus> statuses) {
+        return (root, _, _) -> root.get("status").in(statuses);
     }
 
     /**
@@ -85,7 +97,14 @@ public class MovieSpecification {
      * Use this specification for customer-facing endpoints.
      */
     public static Specification<Movie> isVisibleToCustomers() {
-        return (root, _, _) -> root.get("status").in(List.of(MovieStatus.ACTIVE, MovieStatus.COMING_SOON));
+        return hasStatusIn(CUSTOMER_VISIBLE_STATUSES);
+    }
+
+    /**
+     * Always-false specification (returns empty results).
+     */
+    private static Specification<Movie> alwaysFalse() {
+        return (_, _, cb) -> cb.disjunction();
     }
 
     /**
@@ -105,41 +124,38 @@ public class MovieSpecification {
 
     /**
      * ADMIN VIEW: Compose filter spec for admin (all non-deleted movies).
-     * Admins can filter by any status via FilterMovieRequest.statuses.
+     * Admins can filter by any status via MovieFilterRequest.statuses.
      */
-    public static Specification<Movie> forAdmin(final FilterMovieRequest filters) {
-        return Specification.<Movie>unrestricted().and(isNotDeleted())
-                .and(withFilters(filters));
+    public static Specification<Movie> forAdmin(final MovieFilterRequest filters) {
+        return isNotDeleted().and(withFilters(filters));
     }
 
-    public static Specification<Movie> forCustomer(final FilterMovieRequest filters) {
-        Specification<Movie> spec = Specification.<Movie>unrestricted().and(isNotDeleted());
+    /**
+     * CUSTOMER VIEW: Compose filter spec for customers.
+     * Automatically restricts to visible statuses and sanitizes filters.
+     */
+    public static Specification<Movie> forCustomer(final MovieFilterRequest filters) {
+        Specification<Movie> spec = isNotDeleted();
 
+        // Handle status filtering for customers
         if (filters.getStatuses() != null && !filters.getStatuses().isEmpty()) {
             final List<MovieStatus> allowedStatuses = filters.getStatuses().stream()
-                    .filter(status -> status == MovieStatus.ACTIVE || status == MovieStatus.COMING_SOON)
+                    .filter(CUSTOMER_VISIBLE_STATUSES::contains)
                     .toList();
 
-            // FIXED: Return empty if customer tries to filter only INACTIVE
+            // If customer tries to filter only by non-visible statuses, return empty
             if (allowedStatuses.isEmpty()) {
-                spec = spec.and((_, _, cb) -> cb.disjunction()); // Always false
-            } else {
-                spec = spec.and((root, _, _) -> root.get("status").in(allowedStatuses));
+                return spec.and(alwaysFalse());
             }
+            
+            spec = spec.and(hasStatusIn(allowedStatuses));
         } else {
+            // Default to visible statuses if no status filter provided
             spec = spec.and(isVisibleToCustomers());
         }
 
-        // Apply other filters (exclude status from withFilters call)
-        spec = spec.and(withFilters(FilterMovieRequest.builder()
-                .title(filters.getTitle())
-                .genres(filters.getGenres())
-                .statuses(null)
-                .releaseDateFrom(filters.getReleaseDateFrom())
-                .releaseDateTo(filters.getReleaseDateTo())
-                .durationMin(filters.getDurationMin())
-                .durationMax(filters.getDurationMax())
-                .build()));
+        // Apply other filters (exclude status from withFilters call using helper)
+        spec = spec.and(withFilters(filters.withoutStatuses()));
 
         return spec;
     }

@@ -1,8 +1,6 @@
-package com.moviereservation.api.exception.business;
+package com.moviereservation.api.exception;
 
 import org.springframework.http.HttpStatus;
-
-import com.moviereservation.api.exception.BusinessException;
 
 public class EmailAlreadyExistsException extends BusinessException {
     public EmailAlreadyExistsException(final String email) {
