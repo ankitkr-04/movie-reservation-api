@@ -5,6 +5,8 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticatedPrincipal;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.moviereservation.api.constant.Route;
@@ -75,8 +77,9 @@ public class AdminMovieController {
         @DeleteMapping("/{movieId}")
         @Operation(summary = "Delete movie by ID")
         public ResponseEntity<ApiResponse<Void>> deleteMovie(
-                        @PathVariable final UUID movieId) {
-                movieService.deleteById(movieId);
+                        @PathVariable final UUID movieId,
+                        @AuthenticationPrincipal final AuthenticatedPrincipal principal) {
+                movieService.deleteById(movieId, principal);
                 return ResponseEntity.ok(ApiResponse.success("Movie deleted successfully", null));
         }
 

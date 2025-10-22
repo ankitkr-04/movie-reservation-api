@@ -81,12 +81,11 @@ public class Movie {
      * collections.
      */
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Movie))
+        if (!(o instanceof final Movie movie))
             return false;
-        Movie movie = (Movie) o;
         return id != null && Objects.equals(id, movie.id);
     }
 

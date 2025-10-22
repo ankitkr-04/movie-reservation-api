@@ -62,4 +62,7 @@ public class ShowtimeController {
 
         return ResponseEntity.ok(ApiResponse.success("Showtimes fetched successfully", pagedResponses));
     }
+
+    
+
 }

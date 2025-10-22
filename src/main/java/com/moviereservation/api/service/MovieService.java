@@ -5,9 +5,11 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.stereotype.Service;
 
 import com.moviereservation.api.domain.entities.Movie;
+import com.moviereservation.api.domain.entities.User;
 import com.moviereservation.api.domain.enums.ReservationStatus;
 import com.moviereservation.api.exception.MovieAlreadyExistsException;
 import com.moviereservation.api.exception.MovieDeletionException;
@@ -15,7 +17,9 @@ import com.moviereservation.api.exception.MovieNotFoundException;
 import com.moviereservation.api.repository.MovieRepository;
 import com.moviereservation.api.repository.ReservationRepository;
 import com.moviereservation.api.repository.ShowtimeRepository;
+import com.moviereservation.api.repository.UserRepository;
 import com.moviereservation.api.repository.specification.MovieSpecification;
+import com.moviereservation.api.security.UserPrincipal;
 import com.moviereservation.api.web.dto.request.movie.CreateMovieRequest;
 import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
 import com.moviereservation.api.web.dto.request.movie.UpdateMovieRequest;
@@ -34,6 +38,7 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final ShowtimeRepository showtimeRepository;
     private final ReservationRepository reservationRepository;
+    private final UserRepository userRepository;
     private final MovieMapper movieMapper;
 
     /**
@@ -82,7 +87,7 @@ public class MovieService {
      *                                reservations
      */
 
-    public void deleteById(final UUID movieId) {
+    public void deleteById(final UUID movieId, final AuthenticatedPrincipal principal) {
         final Movie movie = findById(movieId);
         final boolean hasFutureShowtimes = showtimeRepository.existsByMovieIdAndStartTimeAfter(
                 movieId,
@@ -100,6 +105,13 @@ public class MovieService {
         if (hasActiveReservations) {
             throw new MovieDeletionException(movieId.toString());
         }
+
+        final UUID userId = ((UserPrincipal) principal).getUserId();
+
+        final User user = userRepository.findById(userId).orElse(null);
+
+        movie.setDeletedBy(user);
+
         movieRepository.delete(movie);
     }
 

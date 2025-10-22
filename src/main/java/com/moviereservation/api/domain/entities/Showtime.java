@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
+import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -60,6 +61,7 @@ public class Showtime {
     @Column(name = "deleted_at")
     private Instant deletedAt;
 
+    @CreatedBy
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private User createdBy;
@@ -73,12 +75,11 @@ public class Showtime {
     private Instant updatedAt;
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o)
             return true;
-        if (!(o instanceof Showtime))
+        if (!(o instanceof final Showtime showtime))
             return false;
-        Showtime showtime = (Showtime) o;
         return id != null && Objects.equals(id, showtime.id);
     }
 

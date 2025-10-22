@@ -19,7 +19,7 @@ spring:
     properties:
       "[hibernate.dialect]": org.hibernate.dialect.PostgreSQLDialect
       "[hibernate.jdbc.time_zone]": UTC
-      "[hibernate.jdbc.batch_size]": 20
+      "[hibernate.jdbc.batch_size]": 120
       "[hibernate.order_inserts]": true
       "[hibernate.order_updates]": true
       
@@ -43,3 +43,4 @@ logging:
   level:
     root: INFO
     "[com.moviereservation]": INFO
+    

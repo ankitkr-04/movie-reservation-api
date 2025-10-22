@@ -2,7 +2,9 @@ package com.moviereservation.api.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,11 +12,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.moviereservation.api.domain.entities.Movie;
+import com.moviereservation.api.domain.entities.SeatInstance;
+import com.moviereservation.api.domain.entities.SeatTemplate;
 import com.moviereservation.api.domain.entities.Showtime;
 import com.moviereservation.api.domain.enums.ReservationStatus;
+import com.moviereservation.api.domain.enums.SeatStatus;
 import com.moviereservation.api.domain.enums.ShowtimeStatus;
 import com.moviereservation.api.exception.*;
 import com.moviereservation.api.repository.ReservationRepository;
+import com.moviereservation.api.repository.SeatInstanceRepository;
 import com.moviereservation.api.repository.ShowtimeRepository;
 import com.moviereservation.api.repository.specification.ShowtimeSpecification;
 import com.moviereservation.api.web.dto.request.showtime.CreateShowtimeRequest;
@@ -33,6 +39,8 @@ public class ShowtimeService {
 
     private final ShowtimeRepository showtimeRepository;
     private final ReservationRepository reservationRepository;
+    private final SeatTemplateService seatTemplateService;
+    private final SeatInstanceRepository seatInstanceRepository;
     private final MovieService movieService;
     private final ShowtimeMapper showtimeMapper;
 
@@ -58,8 +66,31 @@ public class ShowtimeService {
         showtimeMapper.toEntity(request, showtime);
         showtime.setMovie(movie);
         showtime.setEndTime(endTime);
+        final Showtime savedShowtime = showtimeRepository.save(showtime);
 
-        return showtimeRepository.save(showtime);
+        // Create SeatInstances from SeatTemplate
+        final List<SeatTemplate> templates = seatTemplateService.getTemplatesForScreen(request.getScreenNumber());
+
+        final List<SeatInstance> seatInstances = templates.stream().map(template -> {
+            final SeatInstance instance = new SeatInstance();
+
+            instance.setShowtime(savedShowtime);
+            instance.setSeatTemplate(template);
+            instance.setRowLabel(template.getRowLabel());
+            instance.setSeatNumber(template.getSeatNumber());
+            instance.setType(template.getType());
+            instance.setPrice(template.getBasePrice());
+            instance.setStatus(SeatStatus.AVAILABLE);
+            return instance;
+        }).collect(Collectors.toList());
+        // Batch Insert SeatInstances
+        seatInstanceRepository.saveAll(seatInstances);
+
+        savedShowtime.setAvailableSeatsCount((short) seatInstances.size());
+
+        showtimeRepository.save(savedShowtime);
+
+        return savedShowtime;
     }
 
     @Transactional
@@ -202,4 +233,5 @@ public class ShowtimeService {
                 ReservationStatus.CONFIRMED,
                 ReservationStatus.PENDING_PAYMENT);
     }
+
 }
