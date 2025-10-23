@@ -14,16 +14,16 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 
 public class StripeConfig {
-    @Value("${stripe.api.secret-key}")
+    @Value("${app.stripe.api.secret-key}")
     private String secretKey;
 
-    @Value("${stripe.api.public-key}")
+    @Value("${app.stripe.api.public-key}")
     private String publicKey;
 
-    @Value("${stripe.webhook.secret}")
+    @Value("${app.stripe.webhook.secret}")
     private String webhookSecret;
 
-    @Value("${currency:INR}")
+    @Value("${app.currency:INR}")
     private String currency;
 
     @PostConstruct

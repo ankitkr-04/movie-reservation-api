@@ -358,8 +358,7 @@ public class ShowtimeService {
     private void validateNoReservations(final UUID showtimeId) {
         final boolean hasReservations = reservationRepository.existsByShowtimeIdAndStatusIn(
                 showtimeId,
-                ReservationStatus.CONFIRMED,
-                ReservationStatus.PENDING_PAYMENT);
+                List.of(ReservationStatus.CONFIRMED, ReservationStatus.PENDING_PAYMENT));
 
         if (hasReservations) {
             throw new ShowtimeUpdateException("Cannot update showtime with existing reservations");
@@ -385,8 +384,7 @@ public class ShowtimeService {
         // Cannot delete if has reservations
         final boolean hasReservations = reservationRepository.existsByShowtimeIdAndStatusIn(
                 showtime.getId(),
-                ReservationStatus.CONFIRMED,
-                ReservationStatus.PENDING_PAYMENT);
+                List.of(ReservationStatus.CONFIRMED, ReservationStatus.PENDING_PAYMENT));
 
         if (hasReservations) {
             throw new ShowtimeDeletionException(

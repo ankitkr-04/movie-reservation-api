@@ -1,6 +1,7 @@
 package com.moviereservation.api.service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -214,13 +215,12 @@ public class MovieService {
 
     private void validateNoActiveReservations(final UUID movieId) {
         final boolean hasActiveReservations = reservationRepository.existsByShowtimeMovieIdAndStatusIn(
-                movieId,
-                ReservationStatus.CONFIRMED,
-                ReservationStatus.PENDING_PAYMENT);
+                movieId, List.of(ReservationStatus.CONFIRMED, ReservationStatus.PENDING_PAYMENT));
 
         if (hasActiveReservations) {
             log.warn("Movie deletion failed: Has active reservations: {}", movieId);
             throw new MovieDeletionException("Cannot delete movie with active reservations");
         }
     }
+
 }

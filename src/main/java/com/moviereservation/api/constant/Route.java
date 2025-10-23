@@ -20,6 +20,11 @@ public final class Route {
     public static final String PAYMENTS = API_V1 + "/payments";
     public static final String SHOWTIMES = API_V1 + "/showtimes";
 
+    // Swagger UI
+    public static final String SWAGGER_UI = "/swagger-ui/**";
+    public static final String SWAGGER_UI_HTML = "/swagger-ui.html";
+    public static final String API_DOCS = "/v3/api-docs/**";
+
     // Admin prefix only
     public static final String ADMIN = API_V1 + "/admin";
 }

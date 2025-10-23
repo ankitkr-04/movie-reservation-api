@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         // Public endpoints
+                        .requestMatchers(Route.API_DOCS, Route.SWAGGER_UI, Route.SWAGGER_UI_HTML).permitAll()
                         .requestMatchers(Route.AUTH + "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, Route.MOVIES + "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, Route.SHOWTIMES + "/**").permitAll()
