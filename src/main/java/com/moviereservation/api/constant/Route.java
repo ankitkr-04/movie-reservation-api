@@ -17,6 +17,7 @@ public final class Route {
     public static final String AUTH = API_V1 + "/auth";
     public static final String MOVIES = API_V1 + "/movies";
     public static final String RESERVATIONS = API_V1 + "/reservations";
+    public static final String PAYMENTS = API_V1 + "/payments";
     public static final String SHOWTIMES = API_V1 + "/showtimes";
 
     // Admin prefix only

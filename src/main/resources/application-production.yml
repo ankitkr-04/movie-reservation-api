@@ -51,3 +51,15 @@ management:
         metrics:
             export:
                 enabled: true
+app:
+  security:
+    jwt:
+      secret: e10b4cb4aa7672c002cfac3914025732aac97eccaf26c7db2e787245ebf80487
+      expiration-ms: 86400000  # 1 day in milliseconds
+  currency: INR
+  stripe:
+    api:
+      secret-key: sk_test_51N1XXXXXX  # Replace with your Stripe test secret key
+      public-key: pk_test_51N1XXXXXX  # Replace with your Stripe test public key
+    webhook:
+      secret: whsec_XXXXXXXXXXXXXXXXXXXX  # Replace with your Stripe webhook secret
