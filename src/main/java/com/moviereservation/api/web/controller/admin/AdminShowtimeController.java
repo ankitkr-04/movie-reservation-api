@@ -71,7 +71,7 @@ public class AdminShowtimeController {
     public ResponseEntity<ApiResponse<Void>> deleteShowtime(
             @PathVariable final UUID showtimeId) {
 
-        showtimeService.deleteById(showtimeId);
+        showtimeService.delete(showtimeId);
         return ResponseEntity.ok(ApiResponse.success("Showtime deleted successfully", null));
     }
 

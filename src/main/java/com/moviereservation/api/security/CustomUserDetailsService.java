@@ -1,5 +1,6 @@
 package com.moviereservation.api.security;
 
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -29,6 +30,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Transactional(readOnly = true)
     public UserPrincipal loadUserById(final UUID userId) {
+        Objects.requireNonNull(userId, "User ID cannot be null");
         final User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with id: " + userId));

@@ -3,6 +3,7 @@ package com.moviereservation.api.web.mapper;
 import org.mapstruct.*;
 
 import com.moviereservation.api.domain.entities.Movie;
+import com.moviereservation.api.domain.enums.MovieStatus;
 import com.moviereservation.api.web.dto.request.movie.CreateMovieRequest;
 import com.moviereservation.api.web.dto.request.movie.UpdateMovieRequest;
 import com.moviereservation.api.web.dto.response.movie.MovieAdminResponse;
@@ -29,15 +30,15 @@ public interface MovieMapper {
 
     /**
      * Map CreateMovieRequest to Movie entity.
+     * Sets default status to COMING_SOON if not provided.
      */
-    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
     @Mapping(target = "deletedBy", ignore = true)
-    @Mapping(target = "status", expression = "java(req.getStatus() != null ? req.getStatus() : com.moviereservation.api.domain.enums.MovieStatus.COMING_SOON)")
-    void toEntity(CreateMovieRequest req, @MappingTarget Movie movie);
+    @Mapping(target = "status", expression = "java(getDefaultStatus(req.getStatus()))")
+    Movie toEntity(CreateMovieRequest req);
 
     /**
      * Map UpdateMovieRequest to existing Movie entity.
@@ -49,5 +50,12 @@ public interface MovieMapper {
     @Mapping(target = "updatedAt", ignore = true)
     @Mapping(target = "deletedAt", ignore = true)
     @Mapping(target = "deletedBy", ignore = true)
-    void toEntity(UpdateMovieRequest req, @MappingTarget Movie movie);
+    void updateEntity(UpdateMovieRequest req, @MappingTarget Movie movie);
+
+    /**
+     * Helper method to set default status.
+     */
+    default MovieStatus getDefaultStatus(final MovieStatus status) {
+        return status != null ? status : MovieStatus.COMING_SOON;
+    }
 }

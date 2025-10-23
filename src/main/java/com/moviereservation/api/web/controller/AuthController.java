@@ -17,40 +17,51 @@ import com.moviereservation.api.web.dto.response.user.UserResponse;
 import com.moviereservation.api.web.dto.response.wrappers.ApiResponse;
 import com.moviereservation.api.web.mapper.UserMapper;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Authentication endpoints: registration and login.
+ * Authentication endpoints for user registration and login.
+ * Public access - no authentication required.
  */
 @RestController
 @RequestMapping(Route.AUTH)
-@Tag(name = "Authentication", description = "User registration and login")
+@Tag(name = "Authentication", description = "User registration and login endpoints")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
-    private final UserMapper userMapper; // Inject MapStruct mapper
+    private final UserMapper userMapper;
 
+    /**
+     * Register a new customer account.
+     * Users are created with CUSTOMER role by default.
+     */
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<UserResponse>> registerUser(
-            @RequestBody @Valid final CreateUserRequest request) {
+    @Operation(summary = "Register new user", description = "Creates a new customer account. Email must be unique.")
+    public ResponseEntity<ApiResponse<UserResponse>> register(
+            @Valid @RequestBody final CreateUserRequest request) {
 
-        final User user = authService.registerUser(request);
-        final UserResponse userResponse = userMapper.toResponse(user);
+        final User user = authService.register(request);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                ApiResponse.success("User registered successfully", userResponse));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("User registered successfully", userMapper.toResponse(user)));
     }
 
+    /**
+     * Login with email and password.
+     * Returns JWT token valid for 24 hours.
+     */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<AuthResponse>> loginUser(
-            @RequestBody @Valid final LoginRequest request) {
+    @Operation(summary = "Login user", description = "Authenticates user and returns JWT token (24-hour expiry)")
+    public ResponseEntity<ApiResponse<AuthResponse>> login(
+            @Valid @RequestBody final LoginRequest request) {
 
-        final AuthResponse authResponse = authService.loginUser(request);
+        final AuthResponse auth = authService.login(request);
 
         return ResponseEntity.ok(
-                ApiResponse.success("User logged in successfully", authResponse));
+                ApiResponse.success("Login successful", auth));
     }
 }

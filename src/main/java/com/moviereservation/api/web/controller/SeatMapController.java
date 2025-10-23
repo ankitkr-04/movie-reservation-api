@@ -29,7 +29,7 @@ public class SeatMapController {
     public ResponseEntity<ApiResponse<SeatMapResponse>> getSeatsForShowtime(
             @PathVariable final UUID showtimeId,
             @ModelAttribute @Valid final SeatMapFilterRequest filterRequest) {
-        final SeatMapResponse seatMap = seatMapService.getSeatMapForShowtime(showtimeId, filterRequest);
+        final SeatMapResponse seatMap = seatMapService.getSeatMap(showtimeId, filterRequest);
         return ResponseEntity.ok(ApiResponse.success("Seat map fetched successfully", seatMap));
 
     }

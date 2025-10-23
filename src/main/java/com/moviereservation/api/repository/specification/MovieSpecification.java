@@ -16,7 +16,8 @@ import com.moviereservation.api.web.dto.request.movie.MovieFilterRequest;
 public class MovieSpecification {
 
     // Customer-visible statuses
-    private static final List<MovieStatus> CUSTOMER_VISIBLE_STATUSES = List.of(MovieStatus.ACTIVE,
+    private static final List<MovieStatus> CUSTOMER_VISIBLE_STATUSES = List.of(
+            MovieStatus.ACTIVE,
             MovieStatus.COMING_SOON);
 
     /**
@@ -27,6 +28,7 @@ public class MovieSpecification {
         return (root, _, cb) -> {
             var predicates = cb.conjunction();
 
+            // Title search (case-insensitive partial match)
             if (filters.getTitle() != null && !filters.getTitle().isBlank()) {
                 predicates = cb.and(predicates,
                         cb.like(
@@ -34,38 +36,36 @@ public class MovieSpecification {
                                 "%" + filters.getTitle().toLowerCase() + "%"));
             }
 
-            // Only apply status filter if explicitly provided AND not empty
+            // Status filters (only if explicitly provided)
             if (filters.getStatuses() != null && !filters.getStatuses().isEmpty()) {
                 predicates = cb.and(predicates, root.get("status").in(filters.getStatuses()));
             }
 
+            // Genre filters
             if (filters.getGenres() != null && !filters.getGenres().isEmpty()) {
-                predicates = cb.and(predicates,
-                        root.get("genre").in(filters.getGenres()));
+                predicates = cb.and(predicates, root.get("genre").in(filters.getGenres()));
             }
 
+            // Release date range
             if (filters.getReleaseDateFrom() != null) {
                 predicates = cb.and(predicates,
-                        cb.greaterThanOrEqualTo(
-                                root.get("releaseDate"), filters.getReleaseDateFrom()));
+                        cb.greaterThanOrEqualTo(root.get("releaseDate"), filters.getReleaseDateFrom()));
             }
 
             if (filters.getReleaseDateTo() != null) {
                 predicates = cb.and(predicates,
-                        cb.lessThanOrEqualTo(
-                                root.get("releaseDate"), filters.getReleaseDateTo()));
+                        cb.lessThanOrEqualTo(root.get("releaseDate"), filters.getReleaseDateTo()));
             }
 
+            // Duration range
             if (filters.getDurationMin() != null) {
                 predicates = cb.and(predicates,
-                        cb.greaterThanOrEqualTo(
-                                root.get("duration"), filters.getDurationMin()));
+                        cb.greaterThanOrEqualTo(root.get("duration"), filters.getDurationMin()));
             }
 
             if (filters.getDurationMax() != null) {
                 predicates = cb.and(predicates,
-                        cb.lessThanOrEqualTo(
-                                root.get("duration"), filters.getDurationMax()));
+                        cb.lessThanOrEqualTo(root.get("duration"), filters.getDurationMax()));
             }
 
             return predicates;
@@ -73,8 +73,8 @@ public class MovieSpecification {
     }
 
     /**
-     * Soft-delete filter (applied everywhere via @SQLRestriction, but explicit for
-     * clarity).
+     * Soft-delete filter.
+     * Applied via @SQLRestriction on entity, but explicit for clarity.
      */
     public static Specification<Movie> isNotDeleted() {
         return (root, _, cb) -> cb.isNull(root.get("deletedAt"));
@@ -156,7 +156,7 @@ public class MovieSpecification {
             spec = spec.and(isVisibleToCustomers());
         }
 
-        // Apply other filters (exclude status from withFilters call using helper)
+        // Apply other filters (exclude status from withFilters call)
         spec = spec.and(withFilters(filters.withoutStatuses()));
 
         return spec;

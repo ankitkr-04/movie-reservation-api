@@ -5,12 +5,12 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import com.moviereservation.api.constant.Route;
 import com.moviereservation.api.domain.entities.Movie;
+import com.moviereservation.api.security.UserPrincipal;
 import com.moviereservation.api.service.MovieService;
 import com.moviereservation.api.web.dto.request.PagedFilterRequest;
 import com.moviereservation.api.web.dto.request.movie.CreateMovieRequest;
@@ -78,8 +78,8 @@ public class AdminMovieController {
         @Operation(summary = "Delete movie by ID")
         public ResponseEntity<ApiResponse<Void>> deleteMovie(
                         @PathVariable final UUID movieId,
-                        @AuthenticationPrincipal final AuthenticatedPrincipal principal) {
-                movieService.deleteById(movieId, principal);
+                        @AuthenticationPrincipal final UserPrincipal principal) {
+                movieService.delete(movieId, principal.getUserId());
                 return ResponseEntity.ok(ApiResponse.success("Movie deleted successfully", null));
         }
 
