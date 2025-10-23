@@ -2,6 +2,7 @@ package com.moviereservation.api.web.controller.admin;
 
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.moviereservation.api.constant.Route;
 import com.moviereservation.api.domain.entities.Movie;
+import com.moviereservation.api.domain.enums.MovieStatus;
 import com.moviereservation.api.security.UserPrincipal;
 import com.moviereservation.api.service.MovieService;
 import com.moviereservation.api.web.dto.request.PagedFilterRequest;
@@ -22,78 +24,128 @@ import com.moviereservation.api.web.dto.response.wrappers.PagedResponse;
 import com.moviereservation.api.web.mapper.MovieMapper;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Admin endpoints for movie management.
- * Full CRUD access with no status restrictions.
+ * Admin movie management endpoints.
+ * Full CRUD access to all movies regardless of status.
  */
 @RestController
 @RequestMapping(Route.ADMIN + "/movies")
 @Tag(name = "Admin - Movies", description = "Movie management for administrators")
+@SecurityRequirement(name = "bearerAuth")
 @RequiredArgsConstructor
 public class AdminMovieController {
 
         private final MovieService movieService;
         private final MovieMapper movieMapper;
 
+        /**
+         * Create a new movie.
+         * Default status is COMING_SOON if not specified.
+         */
         @PostMapping
-        @Operation(summary = "Create new movie")
+        @Operation(summary = "Create movie", description = "Create a new movie. Default status: COMING_SOON")
         public ResponseEntity<ApiResponse<MovieAdminResponse>> createMovie(
-                        @Valid @RequestBody final CreateMovieRequest request) {
+                        @Valid @RequestBody CreateMovieRequest request) {
 
-                final Movie movie = movieService.create(request);
-                final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+                Movie movie = movieService.create(request);
 
                 return ResponseEntity.status(HttpStatus.CREATED)
-                                .body(ApiResponse.success("Movie created successfully", response));
+                                .body(ApiResponse.success("Movie created successfully",
+                                                movieMapper.toAdminResponse(movie)));
         }
 
-        @PatchMapping("/{movieId}")
-        @Operation(summary = "Update existing movie")
+        /**
+         * Update existing movie.
+         * Only non-null fields are updated (partial update).
+         */
+        @PatchMapping("/{id}")
+        @Operation(summary = "Update movie", description = "Partially update movie. Only provided fields will be updated.")
         public ResponseEntity<ApiResponse<MovieAdminResponse>> updateMovie(
-                        @PathVariable final UUID movieId,
-                        @Valid @RequestBody final UpdateMovieRequest request) {
+                        @PathVariable("id") UUID movieId,
+                        @Valid @RequestBody UpdateMovieRequest request) {
 
-                final Movie movie = movieService.update(movieId, request);
-                final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+                Movie movie = movieService.update(movieId, request);
 
-                return ResponseEntity.ok(ApiResponse.success("Movie updated successfully", response));
+                return ResponseEntity.ok(
+                                ApiResponse.success("Movie updated successfully", movieMapper.toAdminResponse(movie)));
         }
 
-        @GetMapping("/{movieId}")
-        @Operation(summary = "Get movie by ID")
+        /**
+         * Get movie by ID (admin view with full details).
+         * Can retrieve movies in any status including INACTIVE.
+         */
+        @GetMapping("/{id}")
+        @Operation(summary = "Get movie by ID", description = "Get movie details including administrative metadata")
         public ResponseEntity<ApiResponse<MovieAdminResponse>> getMovie(
-                        @PathVariable final UUID movieId) {
+                        @PathVariable("id") UUID movieId) {
 
-                final Movie movie = movieService.findById(movieId);
-                final MovieAdminResponse response = movieMapper.toAdminResponse(movie);
+                Movie movie = movieService.findById(movieId);
 
-                return ResponseEntity.ok(ApiResponse.success("Movie fetched successfully", response));
+                return ResponseEntity.ok(
+                                ApiResponse.success("Movie retrieved successfully",
+                                                movieMapper.toAdminResponse(movie)));
         }
 
-        @DeleteMapping("/{movieId}")
-        @Operation(summary = "Delete movie by ID")
+        /**
+         * Soft delete a movie.
+         * Cannot delete if movie has:
+         * - Future showtimes
+         * - Active reservations
+         */
+        @DeleteMapping("/{id}")
+        @Operation(summary = "Delete movie", description = "Soft delete movie. Cannot delete if it has future showtimes or active reservations.")
         public ResponseEntity<ApiResponse<Void>> deleteMovie(
-                        @PathVariable final UUID movieId,
-                        @AuthenticationPrincipal final UserPrincipal principal) {
-                movieService.delete(movieId, principal.getUserId());
-                return ResponseEntity.ok(ApiResponse.success("Movie deleted successfully", null));
+                        @PathVariable("id") UUID movieId,
+                        @AuthenticationPrincipal UserPrincipal principal) {
+
+                UUID adminId = principal.getUserId();
+                movieService.delete(movieId, adminId);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success("Movie deleted successfully"));
         }
 
+        /**
+         * Browse all movies with filters.
+         * Admin can see movies in any status (ACTIVE, INACTIVE, COMING_SOON).
+         */
         @GetMapping
-        @Operation(summary = "Get all movies (Admin)", description = "Retrieve a paginated list of movies with optional filtering. Admins can filter by any status.")
-        public ResponseEntity<ApiResponse<PagedResponse<MovieAdminResponse>>> getMovies(
-                        @ModelAttribute final PagedFilterRequest<MovieFilterRequest> pagedFilterRequest) {
+        @Operation(summary = "Browse all movies", description = "Get paginated list of all movies with optional filters. "
+                        +
+                        "Admins can filter by any status.")
+        public ResponseEntity<ApiResponse<PagedResponse<MovieAdminResponse>>> browseMovies(
+                        @ModelAttribute @Valid PagedFilterRequest<MovieFilterRequest> request) {
 
-                final Pageable pageable = pagedFilterRequest.toPageable();
-                final MovieFilterRequest filters = pagedFilterRequest.getFiltersOrEmpty(MovieFilterRequest::new);
+                Pageable pageable = request.toPageable();
+                MovieFilterRequest filters = request.getFiltersOrEmpty(MovieFilterRequest::new);
 
-                final var pagedMovies = movieService.findAllForAdmin(pageable, filters);
-                final var pagedResponses = PagedResponse.of(pagedMovies, movieMapper::toAdminResponse);
+                Page<Movie> movies = movieService.findAllForAdmin(pageable, filters);
 
-                return ResponseEntity.ok(ApiResponse.success("Movies fetched successfully", pagedResponses));
+                PagedResponse<MovieAdminResponse> moviesResponse = PagedResponse.of(movies,
+                                movieMapper::toAdminResponse);
+                return ResponseEntity.ok(
+                                ApiResponse.success("Movies retrieved successfully", moviesResponse));
+        }
+
+        /**
+         * Change movie status.
+         * Convenience endpoint for status transitions.
+         */
+        @PatchMapping("/{id}/status")
+        @Operation(summary = "Update movie status", description = "Update only the movie status (ACTIVE, INACTIVE, COMING_SOON)")
+        public ResponseEntity<ApiResponse<MovieAdminResponse>> updateMovieStatus(
+                        @PathVariable("id") UUID movieId,
+                        @RequestParam MovieStatus status) {
+
+                Movie movie = movieService.updateStatus(movieId, status);
+
+                return ResponseEntity.ok(
+                                ApiResponse.success("Movie status updated successfully",
+                                                movieMapper.toAdminResponse(movie)));
         }
 }

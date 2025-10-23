@@ -65,6 +65,12 @@
 		</dependency>
 
 
+		<!-- Stripe -->
+		<dependency>
+			<groupId>com.stripe</groupId>
+			<artifactId>stripe-java</artifactId>
+			<version>30.0.0</version>
+		</dependency>
 		<!-- Database -->
 		<dependency>
 			<groupId>org.postgresql</groupId>
