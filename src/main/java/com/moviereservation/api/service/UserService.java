@@ -107,7 +107,6 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-
     /**
      * Check if a user exists with the given phone number.
      * 
@@ -116,5 +115,40 @@ public class UserService {
      */
     public boolean existsByPhone(final @NonNull String phone) {
         return userRepository.existsByPhone(phone);
+    }
+
+    /**
+     * Promote a user to ADMIN role.
+     * 
+     * @param userId User ID to promote
+     * @return Updated User entity
+     * @throws UserNotFoundException if user not found
+     * @throws IllegalStateException if user is already an ADMIN
+     */
+    @Transactional
+    public User promoteToAdmin(final @NonNull UUID userId) {
+        final User user = findById(userId);
+
+        if (user.getRole() == UserRole.ADMIN) {
+            throw new IllegalStateException("User is already an ADMIN");
+        }
+
+        user.setRole(UserRole.ADMIN);
+        final User promotedUser = userRepository.save(user);
+
+        log.info("User promoted to ADMIN: {}", user.getEmail());
+        return promotedUser;
+    }
+
+    /**
+     * Find all users with pagination.
+     * 
+     * @param pageable Pagination parameters
+     * @return Page of User entities
+     */
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<User> findAll(
+            final @NonNull org.springframework.data.domain.Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 }
