@@ -54,7 +54,7 @@ public class PaymentService {
         Reservation reservation = reservationService.findById(reservationId);
         validateReservationForPayment(reservation, userId);
 
-        // Convert amount to cents (Stripe uses smallest currency unit)
+        // Convert amount to paise (Stripe uses smallest currency unit)
         long amountInCents = reservation.getTotalPrice()
                 .multiply(new BigDecimal("100"))
                 .longValue();

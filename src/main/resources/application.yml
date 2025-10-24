@@ -1,46 +1,68 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   application:
     name: movie-reservation-system  
+
   profiles:
     active: development
 
-  # Common datasource settings
+  mail:
+    from: ${SMTP_FROM}
+    host: ${SMTP_HOST}
+    port: ${SMTP_PORT}
+    username: ${SMTP_USERNAME}
+    password: ${SMTP_PASSWORD}
+    properties:
+      "[mail.smtp.auth]": true
+      "[mail.smtp.starttls.enable]": true
+
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 5
+        queue-capacity: 500
+      shutdown:
+        await-termination: true
+        await-termination-period: 60s
+      thread-name-prefix: email-async-
+
+  thymeleaf:
+    cache: false
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/mrs_db
-    username: mrs_user
-    password: mrs_password
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
-    
-  # Common JPA settings
+
   jpa:
     hibernate:
-      ddl-auto: none  
-    open-in-view: false  
+      ddl-auto: none
+    open-in-view: false
     properties:
       "[hibernate.dialect]": org.hibernate.dialect.PostgreSQLDialect
       "[hibernate.jdbc.time_zone]": UTC
       "[hibernate.jdbc.batch_size]": 120
       "[hibernate.order_inserts]": true
       "[hibernate.order_updates]": true
-      
-  # Common Flyway settings
+
   flyway:
     enabled: true
     locations: classpath:db/migration
     baseline-on-migrate: true
     validate-on-migrate: true
 
-# Common server settings
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT}
   error:
     include-message: always
     include-binding-errors: always
     include-stacktrace: on_param  
 
-# Common logging
 logging:
   level:
     root: INFO
     "[com.moviereservation]": INFO
-    
